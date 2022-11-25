@@ -13,7 +13,33 @@ const uri = `mongodb+srv://${process.env.DB_ADMIN}:${process.env.DB_PASS}@cluste
 
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
-// console.log(uri);
+
+async function run(){
+try {
+
+  const productsCollection = client.db('products-resale').collection('products');
+
+  app.get('/products',async(req,res)=>{
+      const query = {};
+      const product = await productsCollection.find(query).toArray();
+      res.send(product);
+
+  })
+
+
+}
+
+
+
+finally{
+
+}
+
+}
+
+run().catch(console.log)
+
+
 
 app.get('/', (req, res) => {
   res.send('Hello products resale website')
