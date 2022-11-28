@@ -18,6 +18,9 @@ async function run(){
 try {
 
   const productsCollection = client.db('products-resale').collection('products');
+const bookingsCollection = client.db('products-resale').collection('bookings');
+
+
 
 //get product
   app.get('/products',async(req,res)=>{
@@ -36,6 +39,17 @@ try {
     res.send(result);
 });
 
+
+//bookings
+app.post('/bookings', async(req,res) => {
+const booking = req.body;
+console.log(booking);
+const result = await bookingsCollection.insertOne(booking);
+res.send(result);
+
+
+
+});
 
 
 
