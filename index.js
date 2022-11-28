@@ -3,11 +3,15 @@ const app = express()
 const cors = require('cors');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config();
+const jwt = require('jsonwebtoken');
 const port = process.env.PORT || 5000;
 
 //middleware
 app.use(cors());
 app.use(express.json());
+
+
+
 //mongodb
 const uri = `mongodb+srv://${process.env.DB_ADMIN}:${process.env.DB_PASS}@cluster0.xjsrqww.mongodb.net/?retryWrites=true&w=majority`;
 
@@ -17,10 +21,9 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 async function run(){
 try {
 
-  const productsCollection = client.db('products-resale').collection('products');
+const productsCollection = client.db('products-resale').collection('products');
 const bookingsCollection = client.db('products-resale').collection('bookings');
 const usersCollection = client.db('products-resale').collection('users');
-
 
 
 //get product
@@ -31,6 +34,7 @@ const usersCollection = client.db('products-resale').collection('users');
 
   });
 
+  
   //get product by id
 
   app.get('/products/:id', async (req, res) => {
@@ -49,17 +53,34 @@ res.send(result);
 
 });
 
-app.post ('/users',async(req,res)=>{
+app.post ('/users',async(req,res) => {
   const user = req.body;
   console.log(user);
-  const result = await usersCollection.insertOne(user);
+  const result = await usersCollection.insertOne(user)
   res.send(result);
+});
+
+//jwt
+
+app.get('/jwt',async(req,res)=>{
+  const email= req.query.body;
+  const query = { displayEmail:email};
+  const user = await usersCollection.findOne(query);
+  if(user){
+    const token = jwt.sign({email},process.env.ACCESS_TOKEN,{expiresIn:'1h'})
+    return res.send({accessToken: token})
+  }
+  res.status(403).send({accessToken: ''} );
 })
+
+
+
+//users
 app.get('/users',async(req,res)=>{
   const query = {}
   const user = await usersCollection.find(query).toArray();
-  res.send(user)
-})
+  res.send(user);
+});
 
 
 }
