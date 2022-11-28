@@ -19,6 +19,7 @@ try {
 
   const productsCollection = client.db('products-resale').collection('products');
 const bookingsCollection = client.db('products-resale').collection('bookings');
+const usersCollection = client.db('products-resale').collection('users');
 
 
 
@@ -43,14 +44,22 @@ const bookingsCollection = client.db('products-resale').collection('bookings');
 //bookings
 app.post('/bookings', async(req,res) => {
 const booking = req.body;
-console.log(booking);
 const result = await bookingsCollection.insertOne(booking);
 res.send(result);
 
-
-
 });
 
+app.post ('/users',async(req,res)=>{
+  const user = req.body;
+  console.log(user);
+  const result = await usersCollection.insertOne(user);
+  res.send(result);
+})
+app.get('/users',async(req,res)=>{
+  const query = {}
+  const user = await usersCollection.find(query).toArray();
+  res.send(user)
+})
 
 
 }
