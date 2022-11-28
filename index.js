@@ -8,14 +8,7 @@ const port = process.env.PORT || 5000;
 
 //middleware
 
-const corsConfig ={
-  origin:''  ,
-  credentials: true,
-  methods: ['GET','POST','PUT','DELETE']
-
-}
-app.use(cors(corsConfig));
-app.options("",cors(corsConfig));
+app.use(cors());
 app.use(express.json());
 
 
@@ -26,7 +19,7 @@ const uri = `mongodb+srv://${process.env.DB_ADMIN}:${process.env.DB_PASS}@cluste
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
 
-function verifyJWT(req,res,next){
+function verifyJWT (req,res,next){
   console.log('token inside verifyJWT',req.headers.authorization);
   if(!authHeader){
     return res.send(401).send('unauthorized access');
