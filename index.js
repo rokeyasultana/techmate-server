@@ -97,9 +97,15 @@ const options = {upsert:true};
       role: 'admin'
     }
   }
-  const result = await usersCollection.updateOne(filter,updatedDoc,Options);
+  const result = await usersCollection.updateOne(filter,updatedDoc,options);
 res.send(result);
 })
+
+//seller
+app.get('/seller',async(req,res)=>{
+  const seller =  await usersCollection.find({role: "seller"}).toArray();
+  res.send(seller);
+});
 
 
 //jwt
