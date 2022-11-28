@@ -33,7 +33,7 @@ function verifyJWT(req,res,next){
     next();
 
   });
-  
+
 }
 
 
@@ -79,6 +79,29 @@ app.post ('/users',async(req,res) => {
   res.send(result);
 });
 
+
+//users
+app.get('/users',async(req,res)=>{
+  const query = {}
+  const user = await usersCollection.find(query).toArray();
+  res.send(user);
+});
+
+
+app.put('/users/admin/:id',async(req,res)=>{
+  const id = req.params.id;
+  const filter = {_id:ObjectId(id)};
+const options = {upsert:true};
+  const updatedDoc = {
+    $set:{
+      role: 'admin'
+    }
+  }
+  const result = await usersCollection.updateOne(filter,updatedDoc,Options);
+res.send(result);
+})
+
+
 //jwt
 
 app.get('/jwt',async(req,res)=>{
@@ -94,12 +117,7 @@ app.get('/jwt',async(req,res)=>{
 
 
 
-//users
-app.get('/users',async(req,res)=>{
-  const query = {}
-  const user = await usersCollection.find(query).toArray();
-  res.send(user);
-});
+
 
 
 
