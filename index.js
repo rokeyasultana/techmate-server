@@ -1,6 +1,7 @@
 const express = require('express')
 const app = express()
 const cors = require('cors');
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY)
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config();
 const jwt = require('jsonwebtoken');
@@ -73,6 +74,18 @@ res.send(result);
 
 });
 
+//get bookings
+app.get('/bookings',verifyJWT, async(req,res)=>{
+  const email = req.query.email;
+  const decodedEmail = req.decoded.email;
+  if(email !== decodedEmail ){
+    return res.status(403).send({message: 'forbidden access'})
+  }
+  const query= { email: email};
+  const bookings = await bookingsCollection.find(query).toArray();
+  res.send(bookings);
+});
+
 app.post ('/users',async(req,res) => {
   const user = req.body;
   console.log(user);
@@ -88,6 +101,13 @@ app.get('/users',async(req,res)=>{
   res.send(user);
 });
 
+app.get('/users/:email',async(req,res)=>{
+  const email = req.params.email;
+  const user = await usersCollection.findOne({email:email});
+  res.send(user);
+})
+
+
 app.get ('/users/admin/:id',async(req,res)=>{
   const email = req.params.email;
   const query = {email};
@@ -98,7 +118,7 @@ app.get ('/users/admin/:id',async(req,res)=>{
 )
 
 
-app.put('/users/admin/:id',async(req,res)=>{
+app.put('/users/admin/:id',verifyJWT, async(req,res) => {
 
   const decodedEmail = req.decoded.email;
   const query = {email: decodedEmail};
@@ -126,6 +146,60 @@ app.get('/seller',async(req,res)=>{
 });
 
 
+
+//buyers
+app.get('/buyer',async(req,res) => { 
+  const buyer = await usersCollection.find({role: "buyer"}).toArray()
+  res.send(buyer);
+});
+
+//delete user
+app.delete('/users/:id',async(req,res)=>{
+  const id= req.params.id;
+  const filter = {_id: ObjectId(id)};
+  const result = await usersCollection.deleteOne(filter);
+  res.send(result);
+})
+
+//bookings
+
+app.get('/bookings',async(req,res)=>{
+  const bookings = await bookingsCollection.find({}).toArray();
+  res,send(bookings);
+})
+
+app.get('/bookings/:id',async(req,res)=>{
+const id = req.params.id;
+const query = {_id: ObjectId(id)};
+const booking = await bookingsCollection.findOne(query);
+res.send(booking);
+
+});
+
+
+
+
+
+//payment
+
+app.post("/create-payment-intent", async (req, res) => {
+  const booking = req.body;
+const resalePrice = booking.resalePrice;
+const amount= resalePrice * 100;
+  const paymentIntent = await stripe.paymentIntents.create({
+    amount: amount,
+    currency: "usd",
+    "payment_methods_types": [
+"card"
+    ]
+  });
+  res.send({
+    clientSecret: paymentIntent.client_secret,
+  });
+});
+
+
+
 //jwt
 
 app.get('/jwt',async(req,res)=>{
@@ -141,15 +215,7 @@ app.get('/jwt',async(req,res)=>{
 
 
 
-
-
-
-
-
-
 }
-
-
 
 
 finally{
@@ -159,8 +225,6 @@ finally{
 }
 
 run().catch(console.log)
-
-
 
 app.get('/', (req, res) => {
   res.send('Hello products resale website')
